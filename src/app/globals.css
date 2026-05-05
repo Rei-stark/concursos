@@ -1,0 +1,48 @@
+:root {
+  --navy: #0a1628;
+  --navy-mid: #112244;
+  --gold: #e8b84b;
+  --gold-light: #f5d080;
+  --cream: #f4f0e8;
+  --muted: #8899aa;
+  --border: rgba(232, 184, 75, 0.25);
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --green: #2ecc71;
+  --red: #e74c3c;
+  --yellow: #f39c12;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--navy);
+  color: var(--cream);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font-family: inherit;
+}
