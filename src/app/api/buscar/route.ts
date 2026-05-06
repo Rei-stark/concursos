@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 export const maxDuration = 60
 
 export async function POST(req: NextRequest) {
@@ -50,24 +50,33 @@ Retorne SOMENTE um JSON válido, sem markdown, sem explicações:
   "data_consulta": "${hoje}"
 }`
 
-  const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-opus-4-5',
-      max_tokens: 2000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }],
-    }),
-  })
+  let anthropicRes: Response
+  try {
+    anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    })
+  } catch (fetchErr: unknown) {
+    const msg = fetchErr instanceof Error ? fetchErr.message : String(fetchErr)
+    return NextResponse.json({ error: `Erro de rede ao chamar Anthropic: ${msg}` }, { status: 502 })
+  }
 
   if (!anthropicRes.ok) {
     const err = await anthropicRes.json()
-    return NextResponse.json({ error: err.error?.message || 'Erro na API Anthropic' }, { status: 500 })
+    return NextResponse.json(
+      { error: err.error?.message || `Erro Anthropic HTTP ${anthropicRes.status}` },
+      { status: anthropicRes.status }
+    )
   }
 
   const data = await anthropicRes.json()
@@ -89,6 +98,9 @@ Retorne SOMENTE um JSON válido, sem markdown, sem explicações:
     const parsed = JSON.parse(json.trim())
     return NextResponse.json(parsed)
   } catch {
-    return NextResponse.json({ error: 'Falha ao interpretar resposta da IA.', raw: fullText }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Falha ao interpretar resposta da IA.', raw: fullText },
+      { status: 500 }
+    )
   }
 }
